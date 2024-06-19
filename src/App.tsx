@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <Grid container spacing={5}>
