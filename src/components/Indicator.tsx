@@ -1,11 +1,13 @@
-
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 
 interface Config {
-    title?: String;
-    subtitle?: String;
-    value: Number;
+    title: string;
+    min?: number;
+    max?: number;
+    avg?: number;
+    value?: number;
+    probability?: number;
 }
 
 export default function Indicator(config: Config) {
@@ -14,18 +16,26 @@ export default function Indicator(config: Config) {
             sx={{
               p: 2,
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              mb: 2
             }}
           >
             <Typography component="h2" variant="h6" color="primary" gutterBottom>
                 {config.title} 
             </Typography>
-            <Typography component="p" variant="h4">
-                {config.value.toString()}
-            </Typography>
-            <Typography color="text.secondary" sx={{ flex: 1 }}>
-                {config.subtitle}
-            </Typography>
-        </Paper> 
-    )
+            {config.min !== undefined && config.max !== undefined && (
+                <div>
+                    <Typography variant="body1">Min: {config.min}</Typography>
+                    <Typography variant="body1">Max: {config.max}</Typography>
+                    {config.avg !== undefined && <Typography variant="body1">Prom: {config.avg}</Typography>}
+                </div>
+            )}
+            {config.value !== undefined && (
+                <div>
+                    <Typography variant="body1">Valor: {config.value} mm</Typography>
+                    {config.probability !== undefined && <Typography variant="body1">Probabilidad: {config.probability}</Typography>}
+                </div>
+            )}
+          </Paper> 
+    );
 }

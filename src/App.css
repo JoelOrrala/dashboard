@@ -3,6 +3,32 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: #F1F8E8;
+}
+
+.nav {
+  background-color: #55AD9B;
+  color: white;
+  padding: 1rem;
+}
+
+.nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.nav li {
+  display: inline;
+  margin-right: 1rem;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  text-decoration: underline;
 }
 
 .logo {
