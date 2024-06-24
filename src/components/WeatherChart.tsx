@@ -36,6 +36,7 @@ export default function WeatherChart() {
 					curveType: "function",
 					legend: { position: "right" },
 				}}
+				
 		/>
 		</Paper>
     )

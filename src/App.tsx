@@ -114,10 +114,11 @@ function App() {
 		<Grid xs={12} md={12} lg={12} id="climate-trends">
 			<h2 style={{ color: 'black', textAlign: 'left' }}> Tendencias climáticas</h2>
 		</Grid>
-
+        <Grid xs={12} lg={2}>
+			<ControlPanel />
+		</Grid>
 		<Grid xs={12} lg={10}>
 			<WeatherChart></WeatherChart>
-		
 		</Grid>
 		<Grid xs={12} md={12} lg={12} id="detailed-forecast">
 			<h2 style={{ color: 'black', textAlign: 'left' }}> Pronósticos detallados</h2>
@@ -125,9 +126,6 @@ function App() {
 		<Grid xs={12} md={10} lg={12} >
 	       <BasicTable />
 	    </Grid> 
-		<Grid xs={12} lg={2}>
-			<ControlPanel />
-		</Grid>
 
 		    
 	    </Grid>
