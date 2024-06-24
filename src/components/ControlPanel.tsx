@@ -37,7 +37,7 @@ export default function ControlPanel() {
 		{/* Modificación de la referencia */}
 
          if (descriptionRef.current !== null) {
-			descriptionRef.current.innerHTML = (idx >= 0) ? items[idx]["description"] : ""
+			descriptionRef.current.innerHTML = (selected >= 0) ? items[selected]["description"] : ""
 		}
 
 	};
