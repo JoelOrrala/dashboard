@@ -12,16 +12,13 @@ import './App.css'
 
 function App() {
 
-     {/* 
-         1. Agregue la variable de estado (dataTable) y función de actualización (setDataTable).
-     */}
+     let [cityData, setCityData] = useState([])
 
      let [rowsTable, setRowsTable] = useState([])
 
-
-     {/* Variable de estado y función de actualización */}
-
      let [indicators, setIndicators] = useState([])
+
+     let [summaries, setSummaries] = useState([])
 
     {/* Hook: useEffect */}
 
@@ -32,11 +29,6 @@ function App() {
 
         (async ()=>{
 
-            {/* Request */}
-
-            // let API_KEY = "e79960422708a63a2b445f2e78842ffc"
-            // let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
-            // let savedTextXML = await response.text();
 
             let savedTextXML = localStorage.getItem("openWeatherMap")
             let expiringTime = localStorage.getItem("expiringTime")
@@ -70,43 +62,101 @@ function App() {
                 localStorage.setItem("expiringTime", (nowTime + delay ).toString() )
             }
 
-
-             {/* XML Parser */}
-
              const parser = new DOMParser();
              const xml = parser.parseFromString(savedTextXML, "application/xml");
 
-             {/* Arreglo para agregar los resultados */}
 
-             let dataToIndicators = new Array()
+             let dataToCityIndicator = new Array()
 
              {/* 
                  Análisis, extracción y almacenamiento del contenido del XML 
                  en el arreglo de resultados
              */}
 
-             let location = xml.getElementsByTagName("location")[1]
 
-             let geobaseid = location.getAttribute("geobaseid")
-             dataToIndicators.push(["Location","geobaseid", geobaseid])
+            let location = xml.getElementsByTagName("location")[0];
+            let locationNode = location.getElementsByTagName("location")[0];
+            let cityName = location.getElementsByTagName("name")[0].textContent;
+            dataToCityIndicator.push(cityName);
+            let country = location.getElementsByTagName("country")[0].textContent;
+            dataToCityIndicator.push(country);
+            let timezone = location.getElementsByTagName("timezone")[0].textContent;
+            dataToCityIndicator.push(timezone);
+            let latitude = locationNode.getAttribute("latitude");
+            dataToCityIndicator.push(latitude);
+            let longitude = locationNode.getAttribute("longitude");
+            dataToCityIndicator.push(longitude);
 
-             let latitude = location.getAttribute("latitude")
-             dataToIndicators.push(["Location","Latitude", latitude])
 
-             let longitude = location.getAttribute("longitude")
-             dataToIndicators.push(["Location","Longitude", longitude])
+            setCityData(dataToCityIndicator)
 
-             //console.log( dataToIndicators )
+            let dataToIndicators = [];
 
-             {/* Renderice el arreglo de resultados en un arreglo de elementos Indicator */}
+            let forecastElement = xml.getElementsByTagName("forecast")[0].getElementsByTagName("time")[0];
+            
+            let temperature = forecastElement.getElementsByTagName("temperature")[0].getAttribute("value");
+            let temperatureMin = forecastElement.getElementsByTagName("temperature")[0].getAttribute("min");
+            let temperatureMax = forecastElement.getElementsByTagName("temperature")[0].getAttribute("max");
+            let humidity = forecastElement.getElementsByTagName("humidity")[0].getAttribute("value");
+            let probability = forecastElement.getElementsByTagName("precipitation")[0]?.getAttribute("probability");
 
-             let indicatorsElements = Array.from(dataToIndicators).map(
-                (element) => <Indicator title={element[0]} subtitle={element[1]} value={element[2]} />
-            )
-               
-            {/* Modificación de la variable de estado mediante la función de actualización */}
+            dataToIndicators.push(
+                {
+                    title: 'Temperatura (Kelvin)',
+                    min: parseFloat(temperatureMin),
+                    avg: parseFloat(temperature),
+                    max: parseFloat(temperatureMax)
+                },
+                {
+                    title: 'Humedad',
+                    min: parseFloat(humidity),
+                    avg: parseFloat(humidity),
+                    max: parseFloat(humidity)
+                },
+                {
+                    title: 'Precipitación',
+                    probability: parseFloat(probability)
+                }
+            );
 
-            setIndicators(indicatorsElements)
+            setIndicators(dataToIndicators);
+
+            let forecastElements = Array.from(xml.getElementsByTagName("forecast")[0].getElementsByTagName("time"));
+            let summaryData = [];
+
+            let daysOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+            // Variables para controlar los días ya agregados
+            let currentDay = new Date().getDate();
+            let addedDays = [];
+
+            for (let i = 0; i < forecastElements.length; i++) {
+                let forecast = forecastElements[i];
+                let date = new Date(forecast.getAttribute("from"));
+                let day = daysOfWeek[date.getDay()];
+                let temperature = forecast.getElementsByTagName("temperature")[0].getAttribute("value");
+                let icon = forecast.getElementsByTagName("symbol")[0].getAttribute("var");
+                let formattedDate = `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })}, ${date.getFullYear()}`;
+
+                // Añadir solo un pronóstico por día y saltar el día actual
+                if (date.getDate() !== currentDay && !addedDays.includes(date.getDate())) {
+                    summaryData.push({
+                        day: day,
+                        temperature: `${(parseFloat(temperature) - 273.15).toFixed(1)}°C`, // Convertir de Kelvin a Celsius
+                        date: formattedDate,
+                        icon: icon
+                    });
+                    addedDays.push(date.getDate());
+                }
+
+                // Parar cuando tengamos 6 días de pronóstico
+                if (summaryData.length >= 6) {
+                    break;
+                }
+            }
+
+            setSummaries(summaryData);
+
 
              {/* 
                  2. Procese los resultados de acuerdo con el diseño anterior.
@@ -152,114 +202,35 @@ function App() {
 			<h2 style={{ color: 'black', textAlign: 'left' }}> Información general</h2>
 		</Grid>
 		<Grid xs={6} md={4} lg={2}>
-            <CityIndicator
-                cityName='Guayaquil'
-                country='Ecuador'
-                timezone={-18000}
-                latitude={-2.1667}
-                longitude={-79.9}
-            />
-        </Grid>
+                <CityIndicator
+                    cityName={cityData[0]}
+                    country={cityData[1]}
+                    timezone={parseInt(cityData[2])}
+                    latitude={parseFloat(cityData[3])}
+                    longitude={parseFloat(cityData[4])}
+                />
+            </Grid>
 
-        <Grid xs={6} lg={2}>
-
-                 {indicators[0]}
-
-                 {/* <Indicator title='Precipitación' subtitle='Probabilidad' value={0.13} /> */}
-				
-             </Grid>
-				
-             <Grid xs={6} lg={2}>
-
-                 {indicators[1]}
-					
-                 {/* <Indicator title='Precipitación' subtitle='Probabilidad' value={0.13} /> */}
-				
-             </Grid>
-				
-             <Grid xs={6} lg={2}>
-
-                 {indicators[2]}
-					
-                 {/* <Indicator title='Precipitación' subtitle='Probabilidad' value={0.13} /> */}
-				
-             </Grid>
-        
-    {/*
-		<Grid xs={6} md={4} lg={2}>
-            <Indicator
-                title='Precipitación'
-                value={0.1}
-                probability={0.38}
-            />
-        </Grid>
-
-		<Grid xs={6} md={4} lg={2}>
-            <Indicator
-                title='Temperatura (Kelvin)'
-                min={294.81}
-                avg={298.9}
-                max={305.81}
-            />
-        </Grid>  
-
-        <Grid xs={6} md={4} lg={2}>
-            <Indicator
-                title='Humedad'
-                min={51}
-                avg={76.25}
-                max={93}
-            />
-        </Grid>
-
-        */}
+        {indicators.map((indicator, index) => (
+                <Grid key={index} xs={6} md={4} lg={2}>
+                    <Indicator {...indicator} />
+                </Grid>
+        ))}
 
 		<Grid xs={12} md={12} lg={12} id="weather-forecast">
 			<h2 style={{ color: 'black', textAlign: 'left' }}> Pronóstico de la semana</h2>
 		</Grid>
 
-		<Grid xs={6} sm={4} md={3} lg={2}>
-				<Summary
-                day='Lunes'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
-		<Grid xs={6} sm={4} md={3} lg={2}>
-		<Summary
-                day='Martes'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
-		<Grid xs={6} sm={4} md={3} lg={2}>
-		<Summary
-                day='Miércoles'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
-		<Grid xs={6} sm={4} md={3} lg={2}>
-		<Summary
-                day='Jueves'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
-		<Grid xs={6} sm={4} md={3} lg={2}>
-		<Summary
-                day='Viernes'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
-		<Grid xs={6} sm={4} md={3} lg={2}>
-		<Summary
-                day='Sábado'
-                temperature='30°C'
-                date='17 Junio, 2024'
-            	/>
-	    </Grid>
+		{summaries.map((summary, index) => (
+                <Grid key={index} xs={6} sm={4} md={3} lg={2}>
+                    <Summary
+                        day={summary.day}
+                        temperature={summary.temperature}
+                        date={summary.date}
+                        icon={summary.icon}
+                    />
+                </Grid>
+        ))}
 
 		<Grid xs={12} md={12} lg={12} id="climate-trends">
 			<h2 style={{ color: 'black', textAlign: 'left' }}> Tendencias climáticas</h2>

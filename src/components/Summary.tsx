@@ -4,11 +4,11 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import { CardActionArea } from '@mui/material';
 
-import sunrise from '../assets/sunrise.jpeg'
 interface SummaryProps {
     day: string;
     temperature: string;
     date: string;
+    icon: string; 
 }
 
 export default function Summary(props: SummaryProps) {
@@ -18,8 +18,8 @@ export default function Summary(props: SummaryProps) {
                 <CardMedia
                     component="img"
                     height="140"
-                    image={sunrise}
-                    alt="imagen"
+                    image={`http://openweathermap.org/img/wn/${props.icon}@2x.png`} // URL del icono del clima
+                    alt="weather icon"
                 />
                 <CardContent>
                     <Typography gutterBottom component="h2" variant="h6" color="primary">

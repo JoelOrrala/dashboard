@@ -33,7 +33,11 @@ export default function Indicator(config: Config) {
             {config.value !== undefined && (
                 <div>
                     <Typography variant="body1">Valor: {config.value} mm</Typography>
-                    {config.probability !== undefined && <Typography variant="body1">Probabilidad: {config.probability}</Typography>}
+                </div>
+            )}
+            {config.probability !== undefined && (
+                <div>
+                    <Typography variant="body1">Probabilidad: {config.probability}</Typography>
                 </div>
             )}
           </Paper> 
